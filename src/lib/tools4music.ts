@@ -74,3 +74,49 @@ export const tools4MusicColumns: Tools4MusicColumn[] = [
     ],
   },
 ];
+
+export function emptyTools4MusicFields() {
+  return {
+    royaltyStreamsTarget: "",
+    royaltySplitPercent: "",
+    royaltySyncFeeBand: "",
+    delayMs: "",
+    productionNotes: "",
+  };
+}
+
+export function hydrateTools4MusicFields(track: {
+  royaltyStreamsTarget?: string;
+  royaltySplitPercent?: string;
+  royaltySyncFeeBand?: string;
+  delayMs?: string;
+  productionNotes?: string;
+}) {
+  return {
+    royaltyStreamsTarget: track.royaltyStreamsTarget ?? "",
+    royaltySplitPercent: track.royaltySplitPercent ?? "",
+    royaltySyncFeeBand: track.royaltySyncFeeBand ?? "",
+    delayMs: track.delayMs ?? "",
+    productionNotes: track.productionNotes ?? "",
+  };
+}
+
+export function mergeProductionNotes(opts: {
+  previous: string;
+  explicit: string;
+  bpm: string;
+  delayMs: string;
+}) {
+  if (opts.explicit.trim()) return opts.explicit.trim();
+  const bits: string[] = [];
+  if (opts.bpm.trim()) bits.push(`${opts.bpm.trim()} BPM`);
+  if (opts.delayMs.trim()) bits.push(`Delay ${opts.delayMs.trim()} ms`);
+  if (!bits.length) return opts.previous;
+  let next = opts.previous.trim();
+  for (const bit of bits) {
+    if (!next.toLowerCase().includes(bit.toLowerCase())) {
+      next = next ? `${next} · ${bit}` : bit;
+    }
+  }
+  return next;
+}

@@ -7,6 +7,7 @@ import { extraScottishStations } from "./scottish-radio";
 import { publicWebUrl } from "./blog-urls";
 import { knownSpotifyPlaylist, playlistDeepLink } from "./spotify";
 import { emptySyncFields } from "./sync-tags";
+import { emptyTools4MusicFields } from "./tools4music";
 
 type Row = Record<string, string>;
 type Master = {
@@ -152,6 +153,7 @@ export function buildStoreFromMaster(master: Master): Store {
     masteringTruePeak: "",
     masteringNotes: "",
     masteringSources: "",
+    ...emptyTools4MusicFields(),
     ...emptySyncFields(),
   }));
 
@@ -335,6 +337,7 @@ export function buildStoreFromMaster(master: Master): Store {
     promoOrders: [],
     vendorProducts: [],
     playlistAnalyses: [],
+    calendarReminders: [],
     browseAiRobotId: "",
     browseAiOriginUrl: "",
     monitorActions: [],

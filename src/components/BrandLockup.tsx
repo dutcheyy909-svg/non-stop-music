@@ -1,12 +1,9 @@
-"use client";
-
-import Image from "next/image";
-
 export function BrandLockup({ size = 72 }: { size?: number }) {
   const inner = Math.round(size * 0.58);
   return (
     <div className="relative shrink-0" style={{ width: size, height: size }}>
-      <Image
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
         src="/brand/logo-seal.jpg"
         alt=""
         width={size}
@@ -22,7 +19,8 @@ export function BrandLockup({ size = 72 }: { size?: number }) {
           top: (size - inner) / 2.4,
         }}
       >
-        <Image
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
           src="/brand/logo-portrait.jpg"
           alt="Dutcheyy Records"
           width={inner}

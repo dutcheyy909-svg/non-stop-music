@@ -41,6 +41,11 @@ export type Track = {
   masteringTruePeak: string;
   masteringNotes: string;
   masteringSources: string;
+  royaltyStreamsTarget: string;
+  royaltySplitPercent: string;
+  royaltySyncFeeBand: string;
+  delayMs: string;
+  productionNotes: string;
   syncDescription: string;
   syncKeywords: string;
   syncSuggestedUse: string;
@@ -291,6 +296,15 @@ export type PromoOrder = {
 
 export type VendorProductStatus = "pending" | "approved" | "rejected";
 
+export type CalendarReminder = {
+  id: string;
+  title: string;
+  date: string;
+  time: string;
+  notes: string;
+  alarmHours: number;
+};
+
 export type VendorProduct = {
   id: string;
   vendorName: string;
@@ -330,6 +344,7 @@ export type Store = {
   promoOrders: PromoOrder[];
   vendorProducts: VendorProduct[];
   playlistAnalyses: PlaylistAnalysis[];
+  calendarReminders: CalendarReminder[];
   browseAiRobotId: string;
   browseAiOriginUrl: string;
   monitorActions: MonitorAction[];

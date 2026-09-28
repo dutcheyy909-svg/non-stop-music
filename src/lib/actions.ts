@@ -11,6 +11,7 @@ import { clearSession, readSession, writeSession } from "./session";
 import { updateStore } from "./store";
 import { parseThatPitchTable, placementKey, thatPitchToPlacement } from "./that-pitch";
 import { emptySyncFields } from "./sync-tags";
+import { emptyTools4MusicFields, mergeProductionNotes } from "./tools4music";
 import type { PitchChannel, PpcEvent } from "./types";
 
 export async function createPitch(formData: FormData) {
@@ -179,6 +180,7 @@ export async function importAmuseCodes(formData: FormData) {
         masteringTruePeak: "",
         masteringNotes: "",
         masteringSources: "",
+        ...emptyTools4MusicFields(),
         ...emptySyncFields(),
       }));
 
@@ -800,4 +802,93 @@ export async function applyAnalysisToTrack(formData: FormData) {
   revalidatePath("/sync-assistant");
   revalidatePath("/metadata");
   revalidatePath("/catalog");
+}
+
+function keepField(next: string, previous: string) {
+  return next.trim() ? next.trim() : previous;
+}
+
+export async function saveTools4MusicToTrack(formData: FormData) {
+  const trackId = String(formData.get("trackId") || "");
+  const streams = String(formData.get("royaltyStreamsTarget") || "");
+  const split = String(formData.get("royaltySplitPercent") || "");
+  const feeBand = String(formData.get("royaltySyncFeeBand") || "");
+  const bpm = String(formData.get("bpm") || "");
+  const delayMs = String(formData.get("delayMs") || "");
+  const notes = String(formData.get("productionNotes") || "");
+  const nextPath = String(formData.get("next") || "/tools4music");
+  const safeNext = nextPath === "/production" || nextPath === "/catalog" ? nextPath : "/tools4music";
+
+  await updateStore((store) => {
+    const track = store.tracks.find((item) => item.id === trackId);
+    if (!track) return store;
+    const nextBpm = keepField(bpm, track.bpm);
+    const nextDelay = keepField(delayMs, track.delayMs);
+    return {
+      ...store,
+      tracks: store.tracks.map((item) =>
+        item.id === track.id
+          ? {
+              ...item,
+              royaltyStreamsTarget: keepField(streams, item.royaltyStreamsTarget),
+              royaltySplitPercent: keepField(split, item.royaltySplitPercent),
+              royaltySyncFeeBand: keepField(feeBand, item.royaltySyncFeeBand),
+              bpm: nextBpm,
+              delayMs: nextDelay,
+              productionNotes: mergeProductionNotes({
+                previous: item.productionNotes,
+                explicit: notes,
+                bpm: nextBpm,
+                delayMs: nextDelay,
+              }),
+            }
+          : item,
+      ),
+    };
+  });
+
+  revalidatePath("/tools4music");
+  revalidatePath("/catalog");
+  revalidatePath("/production");
+  revalidatePath("/");
+  if (trackId) {
+    redirect(`${safeNext}?track=${encodeURIComponent(trackId)}`);
+  }
+}
+
+export async function addCalendarReminder(formData: FormData) {
+  const title = String(formData.get("title") || "").trim();
+  const date = String(formData.get("date") || "").trim();
+  const time = String(formData.get("time") || "").trim();
+  const notes = String(formData.get("notes") || "").trim();
+  const alarmHours = Number(formData.get("alarmHours") || 24);
+  if (!title || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return;
+
+  await updateStore((store) => ({
+    ...store,
+    calendarReminders: [
+      {
+        id: slugId("cal", title, Date.now()),
+        title,
+        date,
+        time: /^\d{2}:\d{2}$/.test(time) ? time : "",
+        notes,
+        alarmHours: Number.isFinite(alarmHours) && alarmHours > 0 ? alarmHours : 24,
+      },
+      ...(store.calendarReminders ?? []),
+    ],
+  }));
+  revalidatePath("/calendar");
+  revalidatePath("/");
+}
+
+export async function deleteCalendarReminder(formData: FormData) {
+  const id = String(formData.get("id") || "");
+  if (!id) return;
+  await updateStore((store) => ({
+    ...store,
+    calendarReminders: (store.calendarReminders ?? []).filter((item) => item.id !== id),
+  }));
+  revalidatePath("/calendar");
+  revalidatePath("/");
 }

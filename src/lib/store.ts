@@ -2,6 +2,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { seededStore } from "./seed";
 import { runMonitor } from "./engine";
+import { hydrateTools4MusicFields } from "./tools4music";
 import { STORE_SCHEMA_VERSION, type Store } from "./types";
 
 const dataDir = path.join(process.cwd(), "data");
@@ -33,6 +34,7 @@ export async function readStore(): Promise<Store> {
         masteringNotes: track.masteringNotes ?? "",
         masteringSources: track.masteringSources ?? "",
         bpm: track.bpm ?? "",
+        ...hydrateTools4MusicFields(track),
         syncDescription: track.syncDescription ?? "",
         syncKeywords: track.syncKeywords ?? "",
         syncSuggestedUse: track.syncSuggestedUse ?? "",
@@ -57,6 +59,7 @@ export async function readStore(): Promise<Store> {
       promoOrders: Array.isArray(parsed.promoOrders) ? parsed.promoOrders : [],
       vendorProducts: Array.isArray(parsed.vendorProducts) ? parsed.vendorProducts : [],
       playlistAnalyses: Array.isArray(parsed.playlistAnalyses) ? parsed.playlistAnalyses : [],
+      calendarReminders: Array.isArray(parsed.calendarReminders) ? parsed.calendarReminders : [],
       browseAiRobotId: parsed.browseAiRobotId ?? "",
       browseAiOriginUrl: parsed.browseAiOriginUrl ?? "",
     };

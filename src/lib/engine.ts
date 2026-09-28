@@ -1,3 +1,4 @@
+import { collectCalendarEvents, overdueEvents, todayIso } from "./calendar";
 import type { Store } from "./types";
 import { slugId } from "./ids";
 
@@ -48,6 +49,14 @@ export function runMonitor(store: Store): Store {
       status: "open" as const,
     },
     {
+      id: "mon-t4m",
+      type: "metadata",
+      title: `${store.tracks.filter((t) => !t.royaltyStreamsTarget && !t.royaltySyncFeeBand).length} cuts have no royalty / sync-fee estimate`,
+      reason: "Pick a vault track on Tools 4 Music, run the calculators, then save streams target, split % and fee band.",
+      href: "/tools4music",
+      status: "open" as const,
+    },
+    {
       id: "mon-fund",
       type: "funding",
       title: nextFunding
@@ -67,6 +76,18 @@ export function runMonitor(store: Store): Store {
       title: `${pendingVendors} vendor product${pendingVendors === 1 ? "" : "s"} waiting for approval`,
       reason: "Review uploads before they appear on the production suite.",
       href: "/vendors/review",
+      status: "open",
+    });
+  }
+
+  const due = overdueEvents(collectCalendarEvents(store), todayIso()).length;
+  if (due) {
+    actions.push({
+      id: "mon-calendar",
+      type: "pipeline",
+      title: `${due} reminder${due === 1 ? "" : "s"} past due`,
+      reason: "Open the calendar and push follow-ups into Google Calendar so they ping on your phone.",
+      href: "/calendar",
       status: "open",
     });
   }

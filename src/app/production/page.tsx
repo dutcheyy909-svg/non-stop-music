@@ -1,5 +1,6 @@
 import { DataTable } from "@/components/DataTable";
 import { PpcAdSlot, PpcLink, PpcPageHit } from "@/components/PpcLink";
+import { Tools4MusicSaveForm } from "@/components/Tools4MusicSaveForm";
 import { Kpi, Panel } from "@/components/Ui";
 import { mixingCheatRules, mixingCheatSheet } from "@/lib/mixing-cheatsheet";
 import { internetTemplateLinks, mixingTemplateMarkdown, mixingTemplates } from "@/lib/mixing-templates";
@@ -8,8 +9,14 @@ import { readStore } from "@/lib/store";
 
 const CPC_GBP = 0.12;
 
-export default async function ProductionPage() {
+export default async function ProductionPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ track?: string }>;
+}) {
+  const { track: trackId } = await searchParams;
   const store = await readStore();
+  const selected = store.tracks.find((item) => item.id === trackId) ?? store.tracks[0];
   const approvedVendor = (store.vendorProducts ?? []).filter((item) => item.status === "approved");
   const vendorByCategory = new Map<string, typeof approvedVendor>();
   for (const item of approvedVendor) {
@@ -42,6 +49,13 @@ export default async function ProductionPage() {
       </div>
 
       <PpcAdSlot />
+
+      <Panel title="BPM / delay onto a vault cut">
+        <p className="mb-3 text-sm text-zinc-400">
+          Tap tempo and delay time on Tools 4 Music, then save here or on that desk. Notes land on the catalogue cut.
+        </p>
+        <Tools4MusicSaveForm tracks={store.tracks} selected={selected} loadPath="/production" />
+      </Panel>
 
       <div className="grid gap-4 sm:grid-cols-4">
         <Kpi label="Page views" value={pageHits} />
