@@ -1,9 +1,11 @@
+import type { ReactNode } from "react";
+
 export function DataTable({
   headers,
   rows,
 }: {
   headers: string[];
-  rows: Array<Array<string | number>>;
+  rows: Array<Array<ReactNode>>;
 }) {
   return (
     <div className="overflow-x-auto rounded-xl border border-white/10">
@@ -30,5 +32,14 @@ export function DataTable({
         </tbody>
       </table>
     </div>
+  );
+}
+
+export function WebLink({ href, label }: { href?: string; label?: string }) {
+  if (!href) return <span className="text-zinc-500">—</span>;
+  return (
+    <a href={href} target="_blank" rel="noreferrer" className="text-fuchsia-300 underline decoration-fuchsia-500/40">
+      {label || href.replace(/^https?:\/\//, "").slice(0, 42)}
+    </a>
   );
 }

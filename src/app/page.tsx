@@ -16,7 +16,9 @@ export default async function DashboardPage() {
   const targets = [
     ...store.radioStations.map((s) => `Radio · ${s.name}`),
     ...store.playlists.map((p) => `Playlist · ${p.name}`),
-    ...store.supervisors.map((s) => `Supervisor · ${s.name}`),
+    ...store.supervisors.map((s) =>
+      s.organisation ? `${s.name} — ${s.organisation}` : s.name,
+    ),
   ];
 
   return (
@@ -25,9 +27,12 @@ export default async function DashboardPage() {
         <BrandLockup size={120} />
         <div>
           <p className="text-xs tracking-[0.25em] text-fuchsia-300">MORE THAN MUSIC</p>
-          <h1 className="mt-1 text-3xl font-semibold">Dutcheyy Records · Levitate</h1>
+          <h1 className="mt-1 text-3xl font-semibold">Dutcheyy Records · Non-Stop</h1>
           <p className="mt-2 max-w-2xl text-zinc-400">
-            One desk: master-file radio, Spotify playlist stubs, sync briefs, catalogue and EPK pitches.
+            One desk: master-file radio, Spotify playlist promotion, sync briefs, catalogue and EPK pitches.{" "}
+            <Link href="/promote" className="text-fuchsia-300 underline">
+              Open playlist promotion
+            </Link>
           </p>
         </div>
       </div>
@@ -43,7 +48,7 @@ export default async function DashboardPage() {
           tracks={store.tracks}
           targets={targets}
           channel="other"
-          defaultNotes="EPK + track from the merged Levitate / Non-Stop desk."
+          defaultNotes="EPK + track from the Non-Stop desk."
         />
       </Panel>
       <div className="grid gap-4 lg:grid-cols-2">

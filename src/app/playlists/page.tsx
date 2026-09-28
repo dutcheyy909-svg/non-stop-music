@@ -1,4 +1,4 @@
-import { DataTable } from "@/components/DataTable";
+import { DataTable, WebLink } from "@/components/DataTable";
 import { PitchForm } from "@/components/PitchForm";
 import { Panel } from "@/components/Ui";
 import { readStore } from "@/lib/store";
@@ -10,8 +10,16 @@ export default async function PlaylistsPage() {
       <div>
         <h1 className="text-3xl font-semibold">Playlist Intelligence</h1>
         <p className="mt-2 text-zinc-400">
-          Spotify pitch playlists are stubbed from the Placements sheet in the master file. When you send the
-          dedicated playlist tab, Data Management will replace this list.
+          {store.playlists.length} curator rows from the master <code>spotify playlists</code> sheet, with submission
+          URL plus a Spotify / deep link when the URL is a playlist. Analyse numbers in{" "}
+          <a className="text-fuchsia-300 underline" href="/analyser">
+            Playlist analyser
+          </a>{" "}
+          then pitch from{" "}
+          <a className="text-fuchsia-300 underline" href="/spark">
+            Non-Stop Spark
+          </a>
+          .
         </p>
       </div>
       <PitchForm
@@ -22,8 +30,16 @@ export default async function PlaylistsPage() {
       />
       <Panel title="Targets">
         <DataTable
-          headers={["Name", "Platform", "Curator", "Status", "Notes"]}
-          rows={store.playlists.map((p) => [p.name, p.platform, p.curator, p.status, p.notes])}
+          headers={["Curator", "Country", "Genre", "Status", "Submission URL", "Spotify", "Deep link"]}
+          rows={store.playlists.map((p) => [
+            p.name,
+            p.country || "—",
+            p.genre,
+            p.status,
+            <WebLink key={`${p.id}-u`} href={p.url} />,
+            <WebLink key={`${p.id}-s`} href={p.spotifyUrl} label={p.spotifyUrl ? "Open Spotify" : undefined} />,
+            p.deepLink || "—",
+          ])}
         />
       </Panel>
     </div>

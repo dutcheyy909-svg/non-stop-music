@@ -1,4 +1,4 @@
-import { DataTable } from "@/components/DataTable";
+import { DataTable, WebLink } from "@/components/DataTable";
 import { Panel } from "@/components/Ui";
 import { readStore } from "@/lib/store";
 
@@ -12,13 +12,15 @@ export default async function CatalogPage() {
       </p>
       <Panel title={`${store.tracks.length} works`}>
         <DataTable
-          headers={["Title", "Artist", "Genre", "Mood", "ISRC", "Rights", "Tags"]}
+          headers={["Title", "Artist", "Genre", "Mood", "ISRC", "UPC", "Pre-release", "Rights", "Tags"]}
           rows={store.tracks.map((t) => [
             t.title,
             t.artist,
             t.genre,
             t.mood,
             t.isrc || "missing",
+            t.upc || "missing",
+            <WebLink key={`${t.id}-pre`} href={t.preReleaseLink} label="Open" />,
             t.rights,
             t.tags.join(", "),
           ])}

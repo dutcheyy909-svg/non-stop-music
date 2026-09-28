@@ -43,3 +43,5 @@ next-env.d.ts
 # local workspace (regenerated from master-import)
 /data/store.json
 /uploads
+/data/safari-bookmarks.html
+/data/safari-bookmarks.plist

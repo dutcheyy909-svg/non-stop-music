@@ -2,6 +2,10 @@ import type { Store } from "./types";
 import { slugId } from "./ids";
 
 export function runMonitor(store: Store): Store {
+  const nextFunding = [...(store.fundingRounds ?? [])]
+    .filter((round) => round.status === "open" && /^\d{4}-\d{2}-\d{2}$/.test(round.deadline))
+    .sort((a, b) => a.deadline.localeCompare(b.deadline))[0];
+
   const actions = [
     {
       id: "mon-radio",
@@ -28,14 +32,44 @@ export function runMonitor(store: Store): Store {
       status: "open" as const,
     },
     {
-      id: "mon-playlist",
-      type: "playlist",
-      title: "Spotify pitch playlists are stubbed from placements",
-      reason: "Import the playlist sheet from the master file in Data Management.",
-      href: "/playlists",
+      id: "mon-that-pitch",
+      type: "licensing",
+      title: `${(store.placements ?? []).filter((item) => item.source === "that-pitch").length} That Pitch placement rows tracked`,
+      reason: "Paste the dashboard table on Sync Pipeline to keep library placements current.",
+      href: "/pipeline",
+      status: "open" as const,
+    },
+    {
+      id: "mon-master",
+      type: "metadata",
+      title: `${store.tracks.filter((t) => !t.masteringTarget).length} cuts have no mastering target`,
+      reason: "Scan the web on the AI Mastering suite, then apply a destination to the vault.",
+      href: "/mastering",
+      status: "open" as const,
+    },
+    {
+      id: "mon-fund",
+      type: "funding",
+      title: nextFunding
+        ? `${nextFunding.funder}: ${nextFunding.programme} due ${nextFunding.deadline}`
+        : "No dated funding rounds loaded",
+      reason: "Check Libraries / Funding for company-level grants and deadlines.",
+      href: "/funding",
       status: "open" as const,
     },
   ];
+
+  const pendingVendors = (store.vendorProducts ?? []).filter((item) => item.status === "pending").length;
+  if (pendingVendors) {
+    actions.push({
+      id: "mon-vendors",
+      type: "pipeline",
+      title: `${pendingVendors} vendor product${pendingVendors === 1 ? "" : "s"} waiting for approval`,
+      reason: "Review uploads before they appear on the production suite.",
+      href: "/vendors/review",
+      status: "open",
+    });
+  }
 
   if (!store.pitches.length) {
     actions.push({
@@ -62,7 +96,7 @@ I'm pitching ${track.title} by ${track.artist} for ${station.genreFit || station
 Genre / mood: ${track.genre} — ${track.mood}
 Rights: ${track.rights}
 
-EPK: attached in Levitate. Stream / download link will sit on the listen page.
+EPK: attached in Non-Stop. Stream / download link will sit on the listen page.
 
 Dutcheyy Records — independent, global, future focused.`;
 }
@@ -76,7 +110,7 @@ export function suggestStations(store: Store, trackId?: string) {
   const tags = new Set((track?.tags ?? []).map((t) => t.toLowerCase()));
   return store.radioStations
     .map((station) => {
-      const hay = `${station.genreFit} ${station.stationType} ${station.name}`.toLowerCase();
+      const hay = `${station.genreFit ?? ""} ${station.stationType ?? ""} ${station.name ?? ""}`.toLowerCase();
       const hits = [...tags].filter((t) => hay.includes(t)).length;
       return { station, score: hits * 20 + (station.country === "United Kingdom" ? 15 : 5) };
     })

@@ -1,4 +1,4 @@
-import { DataTable } from "@/components/DataTable";
+import { DataTable, WebLink } from "@/components/DataTable";
 import { PitchForm } from "@/components/PitchForm";
 import { Panel } from "@/components/Ui";
 import { draftRadioPitch, suggestStations } from "@/lib/engine";
@@ -15,8 +15,8 @@ export default async function RadioPage() {
       <div>
         <h1 className="text-3xl font-semibold">Radio</h1>
         <p className="mt-2 text-zinc-400">
-          {store.radioStations.length} stations imported from Radio Database in DUTCHEYYS_MASTER_RECORDS_V3.
-          Pitching logs an EPK + track send in the pipeline.
+          {store.radioStations.length} stations imported from Radio Database. Contact columns are email, phone,
+          website and the research URL from the master file.
         </p>
       </div>
       <PitchForm
@@ -38,13 +38,14 @@ export default async function RadioPage() {
       </Panel>
       <Panel title="Full radio database">
         <DataTable
-          headers={["Station", "Country", "Type", "Contact", "Source"]}
+          headers={["Station", "Country", "Email", "Phone", "Website", "Source"]}
           rows={store.radioStations.map((s) => [
             s.name,
             s.country,
-            s.stationType,
-            s.contact || "—",
-            s.source,
+            s.email || s.contact || "—",
+            s.phone || "—",
+            <WebLink key={`${s.id}-w`} href={s.website || s.submissionPage} />,
+            <WebLink key={`${s.id}-s`} href={s.source} label="Open" />,
           ])}
         />
       </Panel>

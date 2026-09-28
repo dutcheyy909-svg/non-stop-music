@@ -15,3 +15,26 @@ body {
   background: var(--background);
   color: var(--foreground);
 }
+
+.menu-mark {
+  box-decoration-clone: clone;
+  padding-inline: 0.12em;
+  background-image: linear-gradient(
+    transparent 52%,
+    rgb(232 121 249 / 0.72) 52%,
+    rgb(192 38 211 / 0.55) 88%,
+    transparent 88%
+  );
+  background-repeat: no-repeat;
+  background-size: 0% 100%;
+  background-position: left center;
+  transition: background-size 160ms ease, color 160ms ease;
+}
+
+.menu-mark.is-on,
+button:hover .menu-mark,
+a:hover .menu-mark,
+a:focus-visible .menu-mark,
+button:focus-visible .menu-mark {
+  background-size: 100% 100%;
+}

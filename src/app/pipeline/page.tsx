@@ -1,19 +1,59 @@
-import { DataTable } from "@/components/DataTable";
+import { DataTable, WebLink } from "@/components/DataTable";
 import { Kpi, Panel } from "@/components/Ui";
+import { importThatPitchPlacements } from "@/lib/actions";
 import { readStore } from "@/lib/store";
 
 export default async function PipelinePage() {
   const store = await readStore();
   const value = store.opportunities.reduce((sum, item) => sum + item.forecastGbp, 0);
+  const thatPitch = store.placements.filter((item) => item.source === "that-pitch");
+  const paid = store.placements.filter((item) => item.paymentReceived && item.paymentReceived !== "—").length;
 
   return (
     <div className="space-y-6">
       <h1 className="text-3xl font-semibold">Sync Pipeline</h1>
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-4">
         <Kpi label="Open briefs" value={store.opportunities.length} />
         <Kpi label="Logged pitches" value={store.pitches.length} />
+        <Kpi label="That Pitch rows" value={thatPitch.length} />
         <Kpi label="Forecast" value={`£${value.toLocaleString()}`} />
       </div>
+
+      <Panel
+        title="That Pitch — library placements"
+        action={
+          <a
+            href="https://app.thatpitch.com/dashboard"
+            target="_blank"
+            rel="noreferrer"
+            className="rounded-lg bg-fuchsia-600 px-4 py-2 text-sm font-medium hover:bg-fuchsia-500"
+          >
+            Open That Pitch dashboard
+          </a>
+        }
+      >
+        <p className="mb-3 text-sm text-zinc-400">
+          That Pitch has no public API. Copy the placements table from{" "}
+          <a className="text-fuchsia-300 underline" href="https://app.thatpitch.com/dashboard" target="_blank" rel="noreferrer">
+            app.thatpitch.com/dashboard
+          </a>{" "}
+          (or export CSV) and paste it here. Header row required. Tracked separately from master-workbook placements.
+          {paid ? ` ${paid} master rows already show a payment received flag.` : ""}
+        </p>
+        <form action={importThatPitchPlacements} className="grid gap-3">
+          <textarea
+            name="thatPitchTable"
+            required
+            rows={8}
+            placeholder={"Track,Artist,Library,Status,Date,Income\nSICK-live,DUTCHEYY,Epidemic,Accepted,2026-09-01,£0"}
+            className="w-full rounded-lg border border-white/10 bg-black/60 px-3 py-2 font-mono text-sm"
+          />
+          <button className="w-fit rounded-lg bg-fuchsia-600 px-4 py-2 font-medium hover:bg-fuchsia-500">
+            Import That Pitch placements
+          </button>
+        </form>
+      </Panel>
+
       <Panel title="Pitches">
         {store.pitches.length ? (
           <DataTable
@@ -28,17 +68,48 @@ export default async function PipelinePage() {
             ])}
           />
         ) : (
-          <p className="text-zinc-400">No pitches yet. Send from Radio, Playlists, or Opportunity Finder.</p>
+          <p className="text-zinc-400">No pitches yet. Send from Outreach, Radio, Playlists, or Opportunity Finder.</p>
         )}
       </Panel>
-      <Panel title="Placements from master">
+      <Panel title="Placements (master + That Pitch)">
         <DataTable
-          headers={["Track", "Artist", "Library / playlist", "Date"]}
+          headers={[
+            "Source",
+            "Track",
+            "Artist",
+            "Library",
+            "Client / brand",
+            "Supervisor / contact",
+            "Usage",
+            "Air / publish date",
+            "End date",
+            "Publishing fee",
+            "Master fee",
+            "Cue fee",
+            "Income / placement",
+            "ISRC",
+            "Invoice no.",
+            "Payment received",
+            "Link",
+          ]}
           rows={store.placements.map((item) => [
+            item.source || "master",
             item.trackTitle,
             item.artist,
-            item.library || item.production || item.playlist,
-            item.date,
+            item.library || item.production || "—",
+            item.clientBrand || "—",
+            item.supervisorContact || "—",
+            item.usage || "—",
+            item.airPublishDate || "—",
+            item.endDate || "—",
+            item.publishingFee || "—",
+            item.masterFee || "—",
+            item.cueFee || "—",
+            item.incomePerPlacement || "—",
+            item.isrc || "—",
+            item.invoiceNo || "—",
+            item.paymentReceived || "—",
+            <WebLink key={`${item.id}-src`} href={item.sourceUrl} />,
           ])}
         />
       </Panel>

@@ -1,4 +1,4 @@
-import { DataTable } from "@/components/DataTable";
+import { DataTable, WebLink } from "@/components/DataTable";
 import { PitchForm } from "@/components/PitchForm";
 import { Panel } from "@/components/Ui";
 import { draftRadioPitch, suggestStations } from "@/lib/engine";
@@ -13,33 +13,45 @@ export default async function OutreachPage() {
     ...store.radioStations.map((s) => `Radio · ${s.name}`),
     ...store.playlists.map((p) => `Playlist · ${p.name}`),
   ];
+  const withDirectContact = store.radioStations.filter((s) => s.email || s.phone || s.contact).length;
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-semibold">Outreach desk</h1>
         <p className="mt-2 text-zinc-400">
-          Radio Database and playlist/library targets from the same master file. One send logs EPK + track in
-          the pipeline.
+          {store.radioStations.length} radio stations from the master Radio Database. Email, phone, website and
+          submission URL are mapped from the contact metadata columns ({withDirectContact} currently filled in the
+          workbook — empty cells stay blank until you add them on the Radio Database sheet).
         </p>
       </div>
       <PitchForm tracks={store.tracks} targets={targets} channel="radio" defaultNotes={draft} />
-      <Panel title="Radio (master file)">
+      <Panel title="Radio contact metadata">
         <DataTable
-          headers={["Station", "Country", "Type", "Contact"]}
-          rows={store.radioStations.slice(0, 40).map((s) => [
+          headers={["Station", "Country", "Email", "Phone", "Public contact", "Website", "Submission", "Research / source"]}
+          rows={store.radioStations.map((s) => [
             s.name,
             s.country,
-            s.stationType,
+            s.email || "—",
+            s.phone || "—",
             s.contact || "—",
+            <WebLink key={`${s.id}-web`} href={s.website} />,
+            <WebLink key={`${s.id}-sub`} href={s.submissionPage} />,
+            <WebLink key={`${s.id}-src`} href={s.source} label="Open source" />,
           ])}
         />
-        <p className="mt-2 text-xs text-zinc-500">Showing 40 of {store.radioStations.length}. Full list on /radio.</p>
       </Panel>
       <Panel title="Spotify / playlist pitch targets">
         <DataTable
-          headers={["Name", "Platform", "Curator", "Status"]}
-          rows={store.playlists.map((p) => [p.name, p.platform, p.curator, p.status])}
+          headers={["Name", "Country", "Status", "Submission", "Spotify", "Deep link"]}
+          rows={store.playlists.map((p) => [
+            p.name,
+            p.country || "—",
+            p.status,
+            <WebLink key={`${p.id}-u`} href={p.url} />,
+            <WebLink key={`${p.id}-s`} href={p.spotifyUrl} />,
+            p.deepLink || "—",
+          ])}
         />
       </Panel>
     </div>

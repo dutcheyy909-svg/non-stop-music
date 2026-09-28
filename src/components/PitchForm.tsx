@@ -28,8 +28,8 @@ export function PitchForm({
       <label className="text-sm">
         Send to
         <select name="targetName" className="mt-1 w-full rounded-lg border border-white/10 bg-black/60 px-3 py-2">
-          {targets.map((name) => (
-            <option key={name} value={name}>
+            {targets.map((name, index) => (
+            <option key={`${index}-${name}`} value={name}>
               {name}
             </option>
           ))}

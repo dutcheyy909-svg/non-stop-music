@@ -15,8 +15,10 @@ export default async function CrmPage() {
       <PitchForm
         tracks={store.tracks}
         targets={[
-          ...store.supervisors.map((s) => `Supervisor · ${s.name}`),
-          ...store.radioStations.slice(0, 80).map((s) => `Radio · ${s.name}`),
+          ...store.supervisors.map((s) =>
+            s.organisation ? `${s.name} — ${s.organisation}` : s.name,
+          ),
+          ...store.radioStations.map((s) => s.name),
         ]}
         channel="licensing"
         defaultNotes="Merged CRM pitch. EPK + selected catalogue."
@@ -42,6 +44,20 @@ export default async function CrmPage() {
             s.country,
             s.stationType,
             s.contact || "—",
+          ])}
+        />
+      </Panel>
+      <Panel title="Value-pack leads (popup)">
+        <DataTable
+          headers={["When", "Name", "Email", "Age", "Country", "City", "Role"]}
+          rows={(store.fanLeads ?? []).map((lead) => [
+            lead.createdAt.slice(0, 16).replace("T", " "),
+            lead.name,
+            lead.email,
+            lead.age,
+            lead.country,
+            lead.city || "—",
+            lead.role,
           ])}
         />
       </Panel>
