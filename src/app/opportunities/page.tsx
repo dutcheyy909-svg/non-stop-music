@@ -3,6 +3,7 @@ import { DataTable, WebLink } from "@/components/DataTable";
 import { Panel } from "@/components/Ui";
 import { PitchForm } from "@/components/PitchForm";
 import { importBrowseAiJson, importBrowseAiOpportunities, runBrowseAiSyncJob } from "@/lib/actions";
+import { listedFee } from "@/lib/pipeline";
 import { matchOpportunities } from "@/lib/engine";
 import { readStore } from "@/lib/store";
 
@@ -100,9 +101,10 @@ export default async function OpportunitiesPage() {
       />
       <Panel title="Fit-scored briefs">
         <DataTable
-          headers={["Fit", "Priority", "Brief", "Source", "Source of truth", "Genre", "Budget", "Deadline"]}
+          headers={["Fit", "Fee type", "Priority", "Brief", "Source", "Source of truth", "Genre", "Budget", "Deadline"]}
           rows={rows.map((item) => [
             item.fitScore,
+            listedFee(item.budget).kind,
             item.priority,
             item.title,
             item.source,

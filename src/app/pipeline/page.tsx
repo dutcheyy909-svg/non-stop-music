@@ -1,23 +1,29 @@
 import { DataTable, WebLink } from "@/components/DataTable";
 import { Kpi, Panel } from "@/components/Ui";
 import { importThatPitchPlacements } from "@/lib/actions";
+import { moneyGbp, summarisePipeline } from "@/lib/pipeline";
 import { readStore } from "@/lib/store";
 
 export default async function PipelinePage() {
   const store = await readStore();
-  const value = store.opportunities.reduce((sum, item) => sum + item.forecastGbp, 0);
+  const pipeline = summarisePipeline(store);
   const thatPitch = store.placements.filter((item) => item.source === "that-pitch");
   const paid = store.placements.filter((item) => item.paymentReceived && item.paymentReceived !== "—").length;
 
   return (
     <div className="space-y-6">
       <h1 className="text-3xl font-semibold">Sync Pipeline</h1>
-      <div className="grid gap-4 sm:grid-cols-4">
-        <Kpi label="Open briefs" value={store.opportunities.length} />
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+        <Kpi label="Open briefs" value={pipeline.openCount} />
         <Kpi label="Logged pitches" value={store.pitches.length} />
         <Kpi label="That Pitch rows" value={thatPitch.length} />
-        <Kpi label="Forecast" value={`£${value.toLocaleString()}`} />
+        <Kpi label="Cash listed" value={moneyGbp(pipeline.cashListed)} hint="Not won" />
+        <Kpi label="Fit-weighted" value={moneyGbp(pipeline.weighted)} hint="Cash × fit %" />
       </div>
+      <p className="text-sm text-zinc-500">
+        {pipeline.cashCount} cash-listed briefs, {pipeline.splitCount} split deals, {pipeline.tbcCount} fee TBC.
+        Cash listed is the pound figure on the listing. Fit-weighted knocks that down by how well the vault matches.
+      </p>
 
       <Panel
         title="That Pitch — library placements"

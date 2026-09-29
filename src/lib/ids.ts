@@ -1,3 +1,5 @@
+import { listedFee } from "./pipeline";
+
 export function text(value: unknown) {
   if (value == null) return "";
   return String(value);
@@ -13,9 +15,7 @@ export function slugId(prefix: string, value: unknown, index: number) {
 }
 
 export function parseBudget(value: unknown) {
-  const cleaned = text(value).replace(/,/g, "");
-  const match = cleaned.match(/£?\s*([0-9]+(?:\.[0-9]+)?)/);
-  return match ? Number(match[1]) : 0;
+  return listedFee(value).gbp;
 }
 
 export function excelSerialToIso(value: unknown) {

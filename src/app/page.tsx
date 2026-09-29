@@ -4,11 +4,12 @@ import { DataTable } from "@/components/DataTable";
 import { Kpi, Panel } from "@/components/Ui";
 import { PitchForm } from "@/components/PitchForm";
 import { collectCalendarEvents, googleTemplateUrl, upcomingEvents } from "@/lib/calendar";
+import { moneyGbp, summarisePipeline } from "@/lib/pipeline";
 import { readStore } from "@/lib/store";
 
 export default async function DashboardPage() {
   const store = await readStore();
-  const pipelineValue = store.opportunities.reduce((sum, item) => sum + item.forecastGbp, 0);
+  const pipeline = summarisePipeline(store);
   const withRoyalty = store.tracks.filter((t) => t.royaltyStreamsTarget || t.royaltySyncFeeBand);
   const withStudio = store.tracks.filter((t) => t.bpm || t.delayMs);
   const calendarSoon = upcomingEvents(collectCalendarEvents(store), undefined, 6);
@@ -37,16 +38,35 @@ export default async function DashboardPage() {
         </div>
       </div>
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
-        <Kpi label="Opportunities" value={store.opportunities.length} hint="Live briefs" />
-        <Kpi label="Pipeline value" value={`£${pipelineValue.toLocaleString("en-GB")}`} hint="Listed fees" />
+        <Kpi label="Open briefs" value={pipeline.openCount} hint="Opportunity Finder" />
+        <Kpi
+          label="Cash listed"
+          value={moneyGbp(pipeline.cashListed)}
+          hint="On the brief. Not won."
+        />
+        <Kpi
+          label="Fit-weighted"
+          value={moneyGbp(pipeline.weighted)}
+          hint="Cash listed × vault fit %"
+        />
         <Kpi
           label="Cuts with royalty numbers"
           value={withRoyalty.length}
           hint={`${store.tracks.length - withRoyalty.length} still empty`}
         />
         <Kpi label="Cuts with BPM / delay" value={withStudio.length} hint="Studio maths from Tools 4 Music" />
-        <Kpi label="Radio + playlists" value={store.radioStations.length + store.playlists.length} />
       </div>
+      <p className="text-sm text-zinc-500">
+        {pipeline.cashCount} briefs name a cash fee, {pipeline.splitCount} are 50/50 splits with no pound figure,{" "}
+        {pipeline.tbcCount} have no fee yet. Radio + playlists: {store.radioStations.length + store.playlists.length}.{" "}
+        <Link href="/opportunities" className="text-fuchsia-300 underline">
+          Open briefs
+        </Link>
+        {" · "}
+        <Link href="/pipeline" className="text-fuchsia-300 underline">
+          Sync pipeline
+        </Link>
+      </p>
 
       <Panel
         title="Tools 4 Music on the vault"
